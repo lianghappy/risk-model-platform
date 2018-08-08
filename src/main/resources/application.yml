@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: dev
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://172.28.19.238:33061/test_qhh
+    username: AthenaR
+    password: GYzKyTeB
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+

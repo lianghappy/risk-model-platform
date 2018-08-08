@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PMML xmlns="http://www.dmg.org/PMML-4_3" xmlns:data="http://jpmml.org/jpmml-model/InlineTable" version="4.3">
+	<Header>
+		<Application name="JPMML-SkLearn" version="1.5.4"/>
+		<Timestamp>2018-07-17T05:31:03Z</Timestamp>
+	</Header>
+	<MiningBuildTask>
+		<Extension>PMMLPipeline(steps=[('mapper', DataFrameMapper(default=False, df_out=False,
+        features=[('year', None), ('month', None), ('day', None), ('hour', None), ('sdk_version', None), ('mobile_os', None), ('ip_region', None)],
+        input_df=False, sparse=False)),
+       ('classifier', GradientBoostingClassifier(criterion='friedman_mse', init=None,
+              learning_rate=0.1, loss='deviance', max_depth=3,
+              max_features=None, max_leaf_nodes=None,
+              min_impurity_decrease=0.0, min_impurity_split=None,
+              min_samples_leaf=1, min_samples_split=2,
+              min_weight_fraction_leaf=0.0, n_estimators=4, presort='auto',
+              random_state=None, subsample=1.0, verbose=0,
+              warm_start=False))])</Extension>
+	</MiningBuildTask>
+	<DataDictionary>
+		<DataField name="target" optype="categorical" dataType="double">
+			<Value value="0.0"/>
+			<Value value="1.0"/>
+		</DataField>
+		<DataField name="month" optype="continuous" dataType="double"/>
+		<DataField name="sdk_version" optype="continuous" dataType="double"/>
+		<DataField name="mobile_os" optype="continuous" dataType="double"/>
+		<DataField name="ip_region" optype="continuous" dataType="double"/>
+	</DataDictionary>
+	<TransformationDictionary>
+		<DerivedField name="float(month)" optype="continuous" dataType="float">
+			<FieldRef field="month"/>
+		</DerivedField>
+		<DerivedField name="float(sdk_version)" optype="continuous" dataType="float">
+			<FieldRef field="sdk_version"/>
+		</DerivedField>
+		<DerivedField name="float(mobile_os)" optype="continuous" dataType="float">
+			<FieldRef field="mobile_os"/>
+		</DerivedField>
+		<DerivedField name="float(ip_region)" optype="continuous" dataType="float">
+			<FieldRef field="ip_region"/>
+		</DerivedField>
+		<DerivedField name="double(float(sdk_version))" optype="continuous" dataType="double">
+			<FieldRef field="float(sdk_version)"/>
+		</DerivedField>
+		<DerivedField name="double(float(ip_region))" optype="continuous" dataType="double">
+			<FieldRef field="float(ip_region)"/>
+		</DerivedField>
+		<DerivedField name="double(float(mobile_os))" optype="continuous" dataType="double">
+			<FieldRef field="float(mobile_os)"/>
+		</DerivedField>
+		<DerivedField name="double(float(month))" optype="continuous" dataType="double">
+			<FieldRef field="float(month)"/>
+		</DerivedField>
+	</TransformationDictionary>
+	<MiningModel functionName="classification">
+		<MiningSchema>
+			<MiningField name="target" usageType="target"/>
+			<MiningField name="mobile_os"/>
+			<MiningField name="ip_region"/>
+			<MiningField name="sdk_version"/>
+			<MiningField name="month"/>
+		</MiningSchema>
+		<Segmentation multipleModelMethod="modelChain">
+			<Segment id="1">
+				<True/>
+				<MiningModel functionName="regression">
+					<MiningSchema>
+						<MiningField name="mobile_os"/>
+						<MiningField name="ip_region"/>
+						<MiningField name="sdk_version"/>
+						<MiningField name="month"/>
+					</MiningSchema>
+					<Output>
+						<OutputField name="decisionFunction(1.0)" optype="continuous" dataType="double" feature="predictedValue" isFinalResult="false"/>
+						<OutputField name="transformedDecisionFunction(1.0)" optype="continuous" dataType="double" feature="transformedValue" isFinalResult="false">
+							<Apply function="/">
+								<Constant dataType="double">1.0</Constant>
+								<Apply function="+">
+									<Constant dataType="double">1.0</Constant>
+									<Apply function="exp">
+										<Apply function="*">
+											<Constant dataType="double">-1.0</Constant>
+											<FieldRef field="decisionFunction(1.0)"/>
+										</Apply>
+									</Apply>
+								</Apply>
+							</Apply>
+						</OutputField>
+					</Output>
+					<Targets>
+						<Target rescaleConstant="-0.504639928306768" rescaleFactor="0.1"/>
+					</Targets>
+					<Segmentation multipleModelMethod="sum">
+						<Segment id="1">
+							<True/>
+							<TreeModel functionName="regression" missingValueStrategy="nullPrediction" noTrueChildStrategy="returnLastPrediction" splitCharacteristic="multiSplit">
+								<MiningSchema>
+									<MiningField name="sdk_version"/>
+									<MiningField name="ip_region"/>
+									<MiningField name="mobile_os"/>
+								</MiningSchema>
+								<Node score="-0.6351123115734103">
+									<True/>
+									<Node score="-1.5566353428604913">
+										<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="11.5"/>
+										<Node score="2.4149757153186058">
+											<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="2.5"/>
+											<Node score="-0.8527719283172165">
+												<SimplePredicate field="double(float(ip_region))" operator="lessOrEqual" value="5.5"/>
+											</Node>
+										</Node>
+										<Node score="-1.010771957629506">
+											<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="6.5"/>
+										</Node>
+									</Node>
+									<Node score="1.8243358860567145">
+										<SimplePredicate field="double(float(mobile_os))" operator="lessOrEqual" value="5.5"/>
+										<Node score="2.655833008001786">
+											<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="13.5"/>
+										</Node>
+									</Node>
+									<Node score="1.798377955733417">
+										<SimplePredicate field="double(float(ip_region))" operator="lessOrEqual" value="46.5"/>
+									</Node>
+								</Node>
+							</TreeModel>
+						</Segment>
+						<Segment id="2">
+							<True/>
+							<TreeModel functionName="regression" missingValueStrategy="nullPrediction" noTrueChildStrategy="returnLastPrediction" splitCharacteristic="multiSplit">
+								<MiningSchema>
+									<MiningField name="sdk_version"/>
+									<MiningField name="ip_region"/>
+									<MiningField name="mobile_os"/>
+								</MiningSchema>
+								<Node score="-0.6049122917938661">
+									<True/>
+									<Node score="-1.5239792299839314">
+										<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="11.5"/>
+										<Node score="2.070392104913975">
+											<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="2.5"/>
+											<Node score="-0.7861296256585564">
+												<SimplePredicate field="double(float(ip_region))" operator="lessOrEqual" value="5.5"/>
+											</Node>
+										</Node>
+										<Node score="-0.9698522361984693">
+											<SimplePredicate field="double(float(mobile_os))" operator="lessOrEqual" value="13.0"/>
+										</Node>
+									</Node>
+									<Node score="2.269987881165806">
+										<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="13.5"/>
+										<Node score="1.4209156983259421">
+											<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="12.5"/>
+										</Node>
+									</Node>
+									<Node score="1.577575596018209">
+										<SimplePredicate field="double(float(ip_region))" operator="lessOrEqual" value="46.5"/>
+									</Node>
+								</Node>
+							</TreeModel>
+						</Segment>
+						<Segment id="3">
+							<True/>
+							<TreeModel functionName="regression" missingValueStrategy="nullPrediction" noTrueChildStrategy="returnLastPrediction" splitCharacteristic="multiSplit">
+								<MiningSchema>
+									<MiningField name="sdk_version"/>
+									<MiningField name="ip_region"/>
+									<MiningField name="mobile_os"/>
+									<MiningField name="month"/>
+								</MiningSchema>
+								<Node score="-0.5330803510201093">
+									<True/>
+									<Node score="-1.4312708267804835">
+										<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="11.5"/>
+										<Node score="-1.4679882713391783">
+											<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="6.5"/>
+											<Node score="0.36133787110507143">
+												<SimplePredicate field="double(float(mobile_os))" operator="lessOrEqual" value="13.0"/>
+											</Node>
+										</Node>
+										<Node score="3.050073979892593">
+											<SimplePredicate field="double(float(month))" operator="lessOrEqual" value="2.5"/>
+										</Node>
+									</Node>
+									<Node score="2.01175624108821">
+										<SimplePredicate field="double(float(mobile_os))" operator="lessOrEqual" value="5.5"/>
+										<Node score="1.3136473376413142">
+											<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="12.5"/>
+										</Node>
+									</Node>
+									<Node score="1.3712236526602548">
+										<SimplePredicate field="double(float(ip_region))" operator="lessOrEqual" value="46.5"/>
+									</Node>
+								</Node>
+							</TreeModel>
+						</Segment>
+						<Segment id="4">
+							<True/>
+							<TreeModel functionName="regression" missingValueStrategy="nullPrediction" noTrueChildStrategy="returnLastPrediction" splitCharacteristic="multiSplit">
+								<MiningSchema>
+									<MiningField name="sdk_version"/>
+									<MiningField name="ip_region"/>
+								</MiningSchema>
+								<Node score="-0.5112144295754533">
+									<True/>
+									<Node score="0.6827631002806476">
+										<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="11.5"/>
+										<Node score="1.7982238983482777">
+											<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="2.5"/>
+											<Node score="-0.7531940991079461">
+												<SimplePredicate field="double(float(ip_region))" operator="lessOrEqual" value="5.5"/>
+											</Node>
+										</Node>
+										<Node score="-1.0984791925241404">
+											<SimplePredicate field="double(float(ip_region))" operator="lessOrEqual" value="66.5"/>
+										</Node>
+									</Node>
+									<Node score="1.8276290271597444">
+										<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="13.5"/>
+										<Node score="1.158775170124563">
+											<SimplePredicate field="double(float(sdk_version))" operator="lessOrEqual" value="12.5"/>
+										</Node>
+									</Node>
+									<Node score="1.2442357463723712">
+										<SimplePredicate field="double(float(ip_region))" operator="lessOrEqual" value="46.5"/>
+									</Node>
+								</Node>
+							</TreeModel>
+						</Segment>
+					</Segmentation>
+				</MiningModel>
+			</Segment>
+			<Segment id="2">
+				<True/>
+				<RegressionModel functionName="classification" normalizationMethod="none">
+					<MiningSchema>
+						<MiningField name="target" usageType="target"/>
+						<MiningField name="transformedDecisionFunction(1.0)"/>
+					</MiningSchema>
+					<Output>
+						<OutputField name="probability(0.0)" optype="continuous" dataType="double" feature="probability" value="0.0"/>
+						<OutputField name="probability(1.0)" optype="continuous" dataType="double" feature="probability" value="1.0"/>
+					</Output>
+					<RegressionTable intercept="0.0" targetCategory="1.0">
+						<NumericPredictor name="transformedDecisionFunction(1.0)" coefficient="1.0"/>
+					</RegressionTable>
+					<RegressionTable intercept="0.0" targetCategory="0.0"/>
+				</RegressionModel>
+			</Segment>
+		</Segmentation>
+	</MiningModel>
+</PMML>
